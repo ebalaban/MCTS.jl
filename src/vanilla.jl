@@ -77,7 +77,7 @@ function MCTSSolver(;n_iterations::Int64 = 100,
                      depth::Int64 = 10,
                      exploration_constant::Float64 = 1.0,
                      rng = Random.GLOBAL_RNG,
-                     estimate_value = RolloutEstimator(RandomSolver(rng)),
+                     estimate_value = RolloutEstimator(PrioritySolver(rng)),
                      init_Q = 0.0,
                      init_N = 0,
                      reuse_tree::Bool = false,
@@ -281,7 +281,7 @@ function simulate(planner::AbstractMCTSPlanner, node::StateNode, depth::Int64)
 
     # once depth is zero return
     if isterminal(planner.mdp, s)
-	return 0.0
+	    return 0.0
     elseif depth == 0 
         return estimate_value(planner.solved_estimate, planner.mdp, s, depth)
     end

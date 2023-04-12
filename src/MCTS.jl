@@ -12,6 +12,8 @@ using ProgressMeter
 using POMDPLinter: @show_requirements, requirements_info, @POMDP_require, @req, @subreq
 import POMDPLinter
 
+include("custom_policies.jl")
+
 export
     MCTSSolver,
     MCTSPlanner,
