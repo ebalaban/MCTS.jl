@@ -12,7 +12,7 @@ using ProgressMeter
 using POMDPLinter: @show_requirements, requirements_info, @POMDP_require, @req, @subreq
 import POMDPLinter
 
-include("custom_policies.jl")
+
 
 export
     MCTSSolver,
@@ -53,6 +53,7 @@ abstract type AbstractMCTSPlanner{P<:Union{MDP,POMDP}} <: Policy end
 abstract type AbstractMCTSSolver <: Solver end
 abstract type AbstractStateNode end
 
+include("custom_policies.jl")
 include("requirements_info.jl")
 include("domain_knowledge.jl")
 include("vanilla.jl")

@@ -196,7 +196,7 @@ end
 function POMDPModelTools.action_info(p::AbstractMCTSPlanner, s)
     tree = plan!(p, s)
     best = best_sanode_Q(StateNode(tree, s))
-    return action(best), (tree=tree,)
+    return POMDPs.action(best), (tree=tree,)
 end
 
 POMDPs.action(p::AbstractMCTSPlanner, s) = first(action_info(p, s))
@@ -228,7 +228,7 @@ end
 
 function POMDPs.value(tr::MCTSTree{S,A}, s::S, a::A) where {S,A}
     for san in children(StateNode(tr, s)) # slow search through children
-        if action(san) == a
+        if POMDPs.action(san) == a
             return q(san)
         end
     end
@@ -291,7 +291,7 @@ function simulate(planner::AbstractMCTSPlanner, node::StateNode, depth::Int64)
     said = sanode.id
 
     # transition to a new state
-    sp, r = @gen(:sp, :r)(mdp, s, action(sanode), rng)
+    sp, r = @gen(:sp, :r)(mdp, s, POMDPs.action(sanode), rng)
 
     spid = get(tree.state_map, sp, 0)
     if spid == 0

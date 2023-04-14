@@ -13,7 +13,7 @@ PriorityPolicy(problem::Union{POMDP,MDP};
              rng=Random.GLOBAL_RNG) = PriorityPolicy(rng, problem)
 
 ## policy execution ##
-function action(policy::PriorityPolicy, s)
+function POMDPs.action(policy::PriorityPolicy, s)
     as = actions(policy.problem, s)
     if hasproperty(as[1], :priority)
         weights = [a.priority for a in as]
@@ -24,7 +24,7 @@ function action(policy::PriorityPolicy, s)
     return a
 end
 
-function action(policy::PriorityPolicy, b::Nothing)
+function POMDPs.action(policy::PriorityPolicy, b::Nothing)
     return rand(policy.rng, actions(policy.problem))
 end
 
@@ -35,7 +35,7 @@ mutable struct PrioritySolver <: Solver
     rng::AbstractRNG
 end
 PrioritySolver(;rng=Random.GLOBAL_RNG) = PrioritySolver(rng)
-solve(solver::PrioritySolver, problem::Union{POMDP,MDP}) = PriorityPolicy(solver.rng, problem)
+POMDPs.solve(solver::PrioritySolver, problem::Union{POMDP,MDP}) = PriorityPolicy(solver.rng, problem)
 
 
 
@@ -50,11 +50,11 @@ PickFirstPolicy(problem::Union{POMDP,MDP};
              rng=Random.GLOBAL_RNG) = PickFirstPolicy(rng, problem)
 
 ## policy execution ##
-function action(policy::PickFirstPolicy, s)
+function POMDPs.action(policy::PickFirstPolicy, s)
     return actions(policy.problem, s)[1]
 end
 
-function action(policy::PickFirstPolicy, b::Nothing)
+function POMDPs.action(policy::PickFirstPolicy, b::Nothing)
     return actions(policy.problem)[1]
 end
 
@@ -65,7 +65,7 @@ mutable struct PickFirstSolver <: Solver
     rng::AbstractRNG
 end
 PickFirstSolver(;rng=Random.GLOBAL_RNG) = PickFirstSolver(rng)
-solve(solver::PickFirstSolver, problem::Union{POMDP,MDP}) = PickFirstPolicy(solver.rng, problem)
+POMDPs.solve(solver::PickFirstSolver, problem::Union{POMDP,MDP}) = PickFirstPolicy(solver.rng, problem)
 
 
 
@@ -81,14 +81,14 @@ IteratePolicy(problem::Union{POMDP,MDP}, i::Int64;
              rng=Random.GLOBAL_RNG) = IteratePolicy(rng, problem, i)
 
 ## policy execution ##
-function action(policy::IteratePolicy, s)
+function POMDPs.action(policy::IteratePolicy, s)
     all_actions = actions(policy.problem, s)
     a = all_actions[mod(policy.i, length(all_actions))]
     policy.i += 1
     return a
 end
 
-function action(policy::IteratePolicy, b::Nothing)
+function POMDPs.action(policy::IteratePolicy, b::Nothing)
     all_actions = actions(policy.problem)
     a = all_actions[mod(policy.i, length(all_actions))]
     policy.i += 1
@@ -103,6 +103,6 @@ mutable struct IterateSolver <: Solver
     rng::AbstractRNG
 end
 IterateSolver(i::Int64;rng=Random.GLOBAL_RNG) = IterateSolver(i, rng)
-solve(solver::IterateSolver, problem::Union{POMDP,MDP}) = IteratePolicy(solver.rng, problem, solver.i)
+POMDPs.solve(solver::IterateSolver, problem::Union{POMDP,MDP}) = IteratePolicy(solver.rng, problem, solver.i)
 
 
