@@ -13,18 +13,23 @@ PriorityPolicy(problem::Union{POMDP,MDP};
              rng=Random.GLOBAL_RNG) = PriorityPolicy(rng, problem)
 
 ## policy execution ##
-function POMDPs.action(policy::PriorityPolicy, s)
+function POMDPs.action(policy::PriorityPolicy, s::S) where {S}
     as = actions(policy.problem, s)
     if hasproperty(as[1], :priority)
         weights = [a.priority for a in as]
     else
-        weights = [(length(as) - i + 1)^5 for (i, a) in enumerate(as)]
+        pr_best = min(2, length(as))
+        weights = [((i<=pr_best) ? 100 : 1) for (i, a) in enumerate(as)]
+        # weights = [(length(as) - i + 1)^5 for (i, a) in enumerate(as)]
     end
     a = wsample(policy.rng, as, weights)
+    # println("Sampling first 5 weights: ", weights[1:min(5, length(weights))])
     return a
 end
 
+# This is a copy if called with belief. Doesn't get used.
 function POMDPs.action(policy::PriorityPolicy, b::Nothing)
+    error("Not implemented for belief.")
     return rand(policy.rng, actions(policy.problem))
 end
 
