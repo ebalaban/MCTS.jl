@@ -265,6 +265,9 @@ function build_tree(planner::AbstractMCTSPlanner, s)
     # build the tree
     for n = 1:n_iterations
         simulate(planner, root, depth)
+        println(planner.mdp.rewards_csv, "")
+        print(planner.mdp.rewards_csv, string("iteration $n")*",")
+        println(planner.mdp.rewards_csv, "")
         if CPUtime_us() - start_us >= planner.solver.max_time * 1e6
             break
         end
