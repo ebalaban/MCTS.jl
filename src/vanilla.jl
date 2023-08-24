@@ -262,6 +262,13 @@ function build_tree(planner::AbstractMCTSPlanner, s)
     end
 
     start_us = CPUtime_us()
+    # add the header line for different actions
+    print(planner.mdp.qvalues_csv, ",")
+    for san in children(root)
+        print(planner.mdp.qvalues_csv, string(POMDPs.action(san).dest_id.x/20.0)* "  ")
+        print(planner.mdp.qvalues_csv, string(POMDPs.action(san).dest_id.y/20.0)* ",")
+    end
+    println(planner.mdp.qvalues_csv, "")
     # build the tree
     for n = 1:n_iterations
         simulate(planner, root, depth)
@@ -270,6 +277,14 @@ function build_tree(planner::AbstractMCTSPlanner, s)
         println(planner.mdp.rewards_csv, "")
         if CPUtime_us() - start_us >= planner.solver.max_time * 1e6
             break
+        end
+        # look at only the root's direct children and store those Q values
+        if n % 5 == 0
+            print(planner.mdp.qvalues_csv, string(n)*",")
+            for san in children(root)
+                print(planner.mdp.qvalues_csv, string(q(san))*",")
+            end
+            println(planner.mdp.qvalues_csv, "")
         end
     end
     return tree
