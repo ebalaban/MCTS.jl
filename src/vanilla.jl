@@ -275,6 +275,7 @@ function build_tree(planner::AbstractMCTSPlanner, s)
         println(planner.mdp.rewards_csv, "")
         print(planner.mdp.rewards_csv, string("iteration $n")*",")
         println(planner.mdp.rewards_csv, "")
+        println(planner.mdp.io, "------------------\n Iteration $n \n ------------------")
         if CPUtime_us() - start_us >= planner.solver.max_time * 1e6
             break
         end
