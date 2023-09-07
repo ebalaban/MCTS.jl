@@ -38,7 +38,7 @@ function convert_estimator(ev::RolloutEstimator, solver::AbstractMCTSSolver, mdp
     return SolvedRolloutEstimator(convert_to_policy(ev.solver, mdp), solver.rng)
 end
 convert_to_policy(p::Policy, mdp::Union{POMDP,MDP}) = p
-convert_to_policy(s::Solver, mdp::Union{POMDP,MDP}) = solve(s, mdp)
+convert_to_policy(s::Solver, mdp::Union{POMDP,MDP}) = POMDPs.solve(s, mdp)
 convert_to_policy(f::Function, mdp::Union{POMDP,MDP}) = FunctionPolicy(f)
 
 

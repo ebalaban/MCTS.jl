@@ -77,7 +77,7 @@ function MCTSSolver(;n_iterations::Int64 = 100,
                      depth::Int64 = 10,
                      exploration_constant::Float64 = 1.0,
                      rng = Random.GLOBAL_RNG,
-                     estimate_value = RolloutEstimator(RandomSolver(rng)),
+                     estimate_value = RolloutEstimator(PrioritySolver(rng)),
                      init_Q = 0.0,
                      init_N = 0,
                      reuse_tree::Bool = false,
@@ -196,7 +196,7 @@ end
 function POMDPModelTools.action_info(p::AbstractMCTSPlanner, s)
     tree = plan!(p, s)
     best = best_sanode_Q(StateNode(tree, s))
-    return action(best), (tree=tree,)
+    return POMDPs.action(best), (tree=tree,)
 end
 
 POMDPs.action(p::AbstractMCTSPlanner, s) = first(action_info(p, s))
@@ -228,7 +228,7 @@ end
 
 function POMDPs.value(tr::MCTSTree{S,A}, s::S, a::A) where {S,A}
     for san in children(StateNode(tr, s)) # slow search through children
-        if action(san) == a
+        if POMDPs.action(san) == a
             return q(san)
         end
     end
@@ -262,11 +262,30 @@ function build_tree(planner::AbstractMCTSPlanner, s)
     end
 
     start_us = CPUtime_us()
+    # add the header line for different actions
+    print(planner.mdp.qvalues_csv, ",")
+    for san in children(root)
+        print(planner.mdp.qvalues_csv, string(POMDPs.action(san).dest_id.x/20.0)* "  ")
+        print(planner.mdp.qvalues_csv, string(POMDPs.action(san).dest_id.y/20.0)* ",")
+    end
+    println(planner.mdp.qvalues_csv, "")
     # build the tree
     for n = 1:n_iterations
         simulate(planner, root, depth)
+        println(planner.mdp.rewards_csv, "")
+        print(planner.mdp.rewards_csv, string("iteration $n")*",")
+        println(planner.mdp.rewards_csv, "")
+        println(planner.mdp.io, "------------------\n Iteration $n \n ------------------")
         if CPUtime_us() - start_us >= planner.solver.max_time * 1e6
             break
+        end
+        # look at only the root's direct children and store those Q values
+        if n % 5 == 0
+            print(planner.mdp.qvalues_csv, string(n)*",")
+            for san in children(root)
+                print(planner.mdp.qvalues_csv, string(q(san))*",")
+            end
+            println(planner.mdp.qvalues_csv, "")
         end
     end
     return tree
@@ -281,7 +300,7 @@ function simulate(planner::AbstractMCTSPlanner, node::StateNode, depth::Int64)
 
     # once depth is zero return
     if isterminal(planner.mdp, s)
-	return 0.0
+	    return 0.0
     elseif depth == 0 
         return estimate_value(planner.solved_estimate, planner.mdp, s, depth)
     end
@@ -291,7 +310,7 @@ function simulate(planner::AbstractMCTSPlanner, node::StateNode, depth::Int64)
     said = sanode.id
 
     # transition to a new state
-    sp, r = @gen(:sp, :r)(mdp, s, action(sanode), rng)
+    sp, r = @gen(:sp, :r)(mdp, s, POMDPs.action(sanode), rng)
 
     spid = get(tree.state_map, sp, 0)
     if spid == 0
